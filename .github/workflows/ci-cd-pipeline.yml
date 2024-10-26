@@ -14,7 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Run any build steps if needed (optional)
+      # Step 2: Set up Node.js (optional, in case you need Node.js for building)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20" # Ensure the workflow uses Node.js 20
+
+      # Step 3: Run build steps (add build commands as needed)
       - name: Build the project
         run: |
           echo "Add build steps here if necessary, e.g., npm install && npm run build"
@@ -29,8 +35,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Deploy to the server
-      - name: Deploy to server
+      # Step 2: Set up SSH key for deployment
+      - name: Setup SSH for deployment
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
@@ -38,4 +44,11 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 82.112.236.173 >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/id_rsa soumya@82.112.236.173 "cd /var/www/raul_construction_frontend && git pull origin main && ./deploy.sh"
+
+      # Step 3: Deploy to the server
+      - name: Deploy to server
+        run: |
+          ssh -i ~/.ssh/id_rsa soumya@82.112.236.173 << 'EOF'
+            cd /var/www/raul_construction_frontend
+            git pull origin main
+            ./deploy.sh
